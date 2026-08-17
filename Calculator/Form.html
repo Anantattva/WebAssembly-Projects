@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>
+      WASM Calculator
+    </title>
+    <style>
+      body {
+        margin: 0;
+      }
+      #app {
+        position: absolute;
+        margin: 0;
+        height: 100dvh;
+        width: 100dvw;
+        background-image: linear-gradient(
+          45deg,
+          rgba(0, 255, 255, 0.41),
+          rgba(255, 0, 255, 0.41));
+      }
+      h1 {
+        position: absolute;
+        text-align: center;
+        top: 2dvh;
+        left: 50dvw;
+        transform: translateX(-50%);
+        font-family: 'Times New Roman';
+        font-weight: 700;
+        font-size: clamp(5dvw, 5dvw, 3dvw);
+      }
+      #interface {
+        position: absolute;
+        top: 50dvh;
+        left: 50dvw;
+        transform: translateX(-50%) translateY(-50%);
+        height: 70dvh;
+        width: min(70dvh, 70dvw);
+        background: white;
+        border-radius: 5vmin;
+        border: 2px solid rgba(0, 0, 0, 0.25);
+        box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.4);
+      }
+      #display {
+        position: relative;
+        height: 15%;
+        width: 80%;
+        top: 2.5%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.65);
+        border: 1px solid rgba(0, 0, 0, 1);
+        box-shadow: 0 0 1px 1px rgba(0, 0, 0, 0.35);
+        border-radius: 2.5vmin;
+        
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        padding: 5%;
+        color: rgba(0, 240, 100, 1);
+        text-shadow: 0 0 3px rgba(0, 240, 60, 0.75);
+        font-size: 5dvh;
+        font-weight: 500;
+        font-family: 'Times New Roman';
+      }
+      #keys {
+        position: relative;
+        width: 80%;
+        height: clamp(66%, 66%, 60%);
+        top: 5%;
+        left: 50%;
+        padding: 5%;
+        border-radius: 2.5vmin;
+        transform: translateX(-50%);
+        background: rgba(255, 135, 10, 0.4);
+        background-image: linear-gradient(
+        135deg,
+        rgba(255, 145, 10, 0.4),
+        rgba(0, 160, 250, 0.45));
+        border: 1px solid rgba(255, 130, 5, 0.8);
+        box-shadow: 0 0 1px 1px rgba(255, 150, 10, 0.4);
+        
+        display: grid;
+        grid-template-rows: repeat(4, 1fr);
+        grid-template-columns: repeat(4, 1fr);
+        gap: 2.5vmin;
+      }
+      .key {
+        background: rgba(255, 5, 110, 0.75);
+        border-radius: 1.5vmin;
+        border: 1px solid rgba(255, 5, 110, 1);
+        box-shadow: 0 0 1px rgba(255, 255, 255, 0.5);
+        
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 4dvh;
+        text-shadow: 0 0 2px rgba(255, 255, 255, 0.65);
+        font-weight: 500;
+        font-family: 'Times New Roman';
+        
+        transition: 0.2s;
+      }
+      .key:active {
+        scale: 1.05;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <h1>WASM Calculator</h1>
+      <div id="interface">
+        <div id="display">
+          
+        </div>
+        <div id="keys">
+          <div class="key">1</div>
+          <div class="key">2</div>
+          <div class="key">3</div>
+          <div class="key">+</div>
+          
+          <div class="key">4</div>
+          <div class="key">5</div>
+          <div class="key">6</div>
+          <div class="key">-</div>
+          
+          <div class="key">7</div>
+          <div class="key">8</div>
+          <div class="key">9</div>
+          <div class="key">×</div>
+          
+          <div class="key">C</div>
+          <div class="key">0</div>
+          <div class="key">=</div>
+          <div class="key">÷</div>
+        </div>
+      </div>
+    </div>
+    <script type="module">
+      // ।। ॐ नमः शिवाय ।। \\
+      // ++ Enlightened Mystic JS ++ \\
+      
+      import init, { calc } from './pkg/intelligence.js';
+      await init();
+      
+      // !! setup !! \\
+      /** @type {HTMLDivElement} */
+      const display = document.getElementById('display');
+      
+      /** @type {HTMLDivElement} */
+      const keys = document.getElementById('keys');
+      
+      /** @type {HTMLCollection<HTMLDivElement>} */
+      const keySets = document.getElementsByClassName('key');
+      
+      // !! display function !! \\
+      /**
+       * Appends the input value to display text. Sends to rust/wasm function for calculation if clicked '=' and clears display if clicked 'C'.
+       * @function appendToDisplay
+       * @param {String}
+       * @return {null}
+       */
+      function appendToDisplay(value) {
+        if (value === "=") return;
+        if (value === "C") {
+          display.textContent = '';
+          return;
+        }
+        display.textContent += value;
+      }
+      // !! attach listener to all functions !! \\
+      for (let k=0; k<keySets.length; k++) {
+        keySets[k].addEventListener('click', () => {
+          const value = String(keySets[k].textContent);
+          appendToDisplay(value);
+        });
+      }
+      
+      // !! sender function !! \\
+      /**
+       * Sends inputs to rust/wasm for calculation
+       * @function processCalculation
+       */
+       function processCalculation() {
+         // << get input text >> \\
+         const text = display.textContent;
+         // << process input >> \\
+         const operatorMatch = text.match(/[+\-×÷]/);
+         // << safety checks >> \\
+         if (!operatorMatch) return;
+         const operator = operatorMatch[0];
+         const parts = text.split(operator);
+         // << parsing >> \\
+         if (parts.length === 2 && parts[0] !== '' && parts[1] !== '') {
+           const num1 = parseFloat(parts[0]);
+           const num2 = parseFloat(parts[1]);
+           // << output >> \\
+           const result = calc(num1, num2, operator);
+           display.textContent = result;
+         }
+       }
+       const equalBtn = [...keySets].find((key) => key.textContent === '=');
+       equalBtn.addEventListener('click', () => {
+         processCalculation();
+       });
+    </script> 
+  </body>
+</html>
